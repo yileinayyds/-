@@ -122,24 +122,24 @@ function library.new(library, name, theme)
 	end
 -------------------------GHOST TEAM------------------------------
 	local config = {
-		MainColor = Color3.fromRGB(16, 16, 16),
-		TabColor = Color3.fromRGB(22, 22, 22),
-		Bg_Color = Color3.fromRGB(17, 17, 17),
-		Zy_Color = Color3.fromRGB(17, 17, 17), -- 主要颜色
+    MainColor = Color3.fromRGB(255, 255, 255),  -- 深色改为白色
+    TabColor = Color3.fromRGB(245, 245, 245),  -- 深色改为浅灰色
+    Bg_Color = Color3.fromRGB(255, 255, 255),  -- 深色改为白色
+    Zy_Color = Color3.fromRGB(245, 245, 245),   -- 深色改为浅灰色
 
-		Button_Color = Color3.fromRGB(22, 22, 22),
-		Textbox_Color = Color3.fromRGB(22, 22, 22),
-		Dropdown_Color = Color3.fromRGB(22, 22, 22),
-		Keybind_Color = Color3.fromRGB(22, 22, 22),
-		Label_Color = Color3.fromRGB(22, 22, 22),
+    Button_Color = Color3.fromRGB(255, 182, 193),  -- 白色改为粉色
+    Textbox_Color = Color3.fromRGB(255, 182, 193), -- 白色改为粉色
+    Dropdown_Color = Color3.fromRGB(255, 182, 193),-- 白色改为粉色
+    Keybind_Color = Color3.fromRGB(255, 182, 193), -- 白色改为粉色
+    Label_Color = Color3.fromRGB(255, 182, 193),   -- 白色改为粉色
 
-		Slider_Color = Color3.fromRGB(22, 22, 22),
-		SliderBar_Color = Color3.fromRGB(37, 254, 152),
-
-		Toggle_Color = Color3.fromRGB(22, 22, 22),
-		Toggle_Off = Color3.fromRGB(34, 34, 34),
-		Toggle_On = Color3.fromRGB(37, 254, 152),
-	}
+    Slider_Color = Color3.fromRGB(245, 245, 245),  -- 深色改为浅灰色
+    SliderBar_Color = Color3.fromRGB(37, 254, 152), -- 保持不变
+    
+    Toggle_Color = Color3.fromRGB(245, 245, 245),  -- 深色改为浅灰色
+    Toggle_Off = Color3.fromRGB(245, 245, 245),    -- 深色改为浅灰色
+    Toggle_On = Color3.fromRGB(37, 254, 152)       -- 保持不变
+}
 -------------------------GHOST TEAM------------------------------
 	local YI = Instance.new("ScreenGui")
 	local Main = Instance.new("Frame")
