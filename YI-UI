@@ -121,25 +121,26 @@ function library.new(library, name, theme)
 		end
 	end
 -------------------------GHOST TEAM------------------------------
-	local config = {
-		MainColor = Color3.fromRGB(16, 16, 16),
-		TabColor = Color3.fromRGB(22, 22, 22),
-		Bg_Color = Color3.fromRGB(17, 17, 17),
-		Zy_Color = Color3.fromRGB(17, 17, 17), -- 主要颜色
-
-		Button_Color = Color3.fromRGB(22, 22, 22),
-		Textbox_Color = Color3.fromRGB(22, 22, 22),
-		Dropdown_Color = Color3.fromRGB(22, 22, 22),
-		Keybind_Color = Color3.fromRGB(22, 22, 22),
-		Label_Color = Color3.fromRGB(22, 22, 22),
-
-		Slider_Color = Color3.fromRGB(22, 22, 22),
-		SliderBar_Color = Color3.fromRGB(37, 254, 152),
-
-		Toggle_Color = Color3.fromRGB(22, 22, 22),
-		Toggle_Off = Color3.fromRGB(34, 34, 34),
-		Toggle_On = Color3.fromRGB(37, 254, 152),
-	}
+	-- 将深色替换为粉色配置
+local config = {
+    MainColor = Color3.fromRGB(255, 105, 180),  -- 粉色
+    TabColor = Color3.fromRGB(255, 182, 193),   -- 浅粉色
+    Bg_Color = Color3.fromRGB(255, 192, 203),   -- 粉红色
+    Zy_Color = Color3.fromRGB(255, 182, 193),   -- 浅粉色
+    
+    Button_Color = Color3.fromRGB(255, 192, 203),
+    Textbox_Color = Color3.fromRGB(255, 182, 193),
+    Dropdown_Color = Color3.fromRGB(255, 192, 203),
+    Keybind_Color = Color3.fromRGB(255, 182, 193),
+    Label_Color = Color3.fromRGB(255, 192, 203),
+    
+    Slider_Color = Color3.fromRGB(255, 182, 193),
+    SliderBar_Color = Color3.fromRGB(255, 105, 180),  -- 粉色
+    
+    Toggle_Color = Color3.fromRGB(255, 182, 193),
+    Toggle_Off = Color3.fromRGB(220, 180, 200),       -- 浅紫色
+    Toggle_On = Color3.fromRGB(255, 105, 180),        -- 粉色
+}
 -------------------------GHOST TEAM------------------------------
 	local YI = Instance.new("ScreenGui")
 	local Main = Instance.new("Frame")
@@ -261,8 +262,9 @@ function library.new(library, name, theme)
 	Side.ClipsDescendants = true
 	Side.Position = UDim2.new(1, 0, 0, 0)
 	Side.Size = UDim2.new(0, 110, 0, 353)
-	SideG.Color =
-		ColorSequence.new({ ColorSequenceKeypoint.new(0.00, config.Zy_Color), ColorSequenceKeypoint.new(1.00, config.Zy_Color) })
+	SideG.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 182, 193)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 182, 193))
+})
 	SideG.Rotation = 90
 	SideG.Name = "SideG"
 	SideG.Parent = Side
@@ -288,13 +290,14 @@ function library.new(library, name, theme)
 	ScriptTitle.Size = UDim2.new(0, 102, 0, 20)
 	ScriptTitle.Font = Enum.Font.GothamSemibold
 	ScriptTitle.Text = name
-	ScriptTitle.TextColor3 = Color3.fromRGB(37, 254, 152)
+	ScriptTitle.TextColor3 = Color3.fromRGB(255, 105, 180)
 	ScriptTitle.TextSize = 14.000
 	ScriptTitle.TextScaled = true
 	ScriptTitle.TextXAlignment = Enum.TextXAlignment.Left
 
-	SBG.Color =
-		ColorSequence.new({ ColorSequenceKeypoint.new(0.00, config.Zy_Color), ColorSequenceKeypoint.new(1.00, config.Zy_Color) })
+	SBG.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 182, 193)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 182, 193))
+})
 	SBG.Rotation = 90
 	SBG.Name = "SBG"
 	SBG.Parent = SB
