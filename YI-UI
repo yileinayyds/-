@@ -32,7 +32,7 @@ function Ripple(obj)
 		Ripple.Image = "rbxassetid://80818864421975"
 		Ripple.ImageTransparency = 0.800
 		Ripple.ScaleType = Enum.ScaleType.Fit
-		Ripple.ImageColor3 = Color3.fromRGB(255, 182, 193)
+		Ripple.ImageColor3 = Color3.fromRGB(255, 255, 255)
 		Ripple.Position = UDim2.new(
 			(mouse.X - Ripple.AbsolutePosition.X) / obj.AbsoluteSize.X,
 			0,
@@ -122,24 +122,24 @@ function library.new(library, name, theme)
 	end
 -------------------------GHOST TEAM------------------------------
 	local config = {
-    MainColor = Color3.fromRGB(255, 255, 255),  -- 深色改为白色
-    TabColor = Color3.fromRGB(245, 245, 245),  -- 深色改为浅灰色
-    Bg_Color = Color3.fromRGB(255, 255, 255),  -- 深色改为白色
-    Zy_Color = Color3.fromRGB(245, 245, 245),   -- 深色改为浅灰色
+		MainColor = Color3.fromRGB(16, 16, 16),
+		TabColor = Color3.fromRGB(22, 22, 22),
+		Bg_Color = Color3.fromRGB(17, 17, 17),
+		Zy_Color = Color3.fromRGB(17, 17, 17), -- 主要颜色
 
-    Button_Color = Color3.fromRGB(255, 182, 193),  -- 白色改为粉色
-    Textbox_Color = Color3.fromRGB(255, 182, 193), -- 白色改为粉色
-    Dropdown_Color = Color3.fromRGB(255, 182, 193),-- 白色改为粉色
-    Keybind_Color = Color3.fromRGB(255, 182, 193), -- 白色改为粉色
-    Label_Color = Color3.fromRGB(255, 182, 193),   -- 白色改为粉色
+		Button_Color = Color3.fromRGB(22, 22, 22),
+		Textbox_Color = Color3.fromRGB(22, 22, 22),
+		Dropdown_Color = Color3.fromRGB(22, 22, 22),
+		Keybind_Color = Color3.fromRGB(22, 22, 22),
+		Label_Color = Color3.fromRGB(22, 22, 22),
 
-    Slider_Color = Color3.fromRGB(245, 245, 245),  -- 深色改为浅灰色
-    SliderBar_Color = Color3.fromRGB(37, 254, 152), -- 保持不变
-    
-    Toggle_Color = Color3.fromRGB(245, 245, 245),  -- 深色改为浅灰色
-    Toggle_Off = Color3.fromRGB(245, 245, 245),    -- 深色改为浅灰色
-    Toggle_On = Color3.fromRGB(37, 254, 152)       -- 保持不变
-}
+		Slider_Color = Color3.fromRGB(22, 22, 22),
+		SliderBar_Color = Color3.fromRGB(37, 254, 152),
+
+		Toggle_Color = Color3.fromRGB(22, 22, 22),
+		Toggle_Off = Color3.fromRGB(34, 34, 34),
+		Toggle_On = Color3.fromRGB(37, 254, 152),
+	}
 -------------------------GHOST TEAM------------------------------
 	local YI = Instance.new("ScreenGui")
 	local Main = Instance.new("Frame")
@@ -288,7 +288,7 @@ function library.new(library, name, theme)
 	ScriptTitle.Size = UDim2.new(0, 102, 0, 20)
 	ScriptTitle.Font = Enum.Font.GothamSemibold
 	ScriptTitle.Text = name
-	ScriptTitle.TextColor3 = Color3.fromRGB(255, 182, 193)
+	ScriptTitle.TextColor3 = Color3.fromRGB(37, 254, 152)
 	ScriptTitle.TextSize = 14.000
 	ScriptTitle.TextScaled = true
 	ScriptTitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -332,7 +332,7 @@ function library.new(library, name, theme)
 		TabText.Size = UDim2.new(0, 76, 0, 24)
 		TabText.Font = Enum.Font.GothamSemibold
 		TabText.Text = name
-		TabText.TextColor3 = Color3.fromRGB(255, 182, 193)
+		TabText.TextColor3 = Color3.fromRGB(255, 255, 255)
 		TabText.TextSize = 14.000
 		TabText.TextXAlignment = Enum.TextXAlignment.Left
 		TabText.TextTransparency = 0.2
@@ -391,7 +391,7 @@ function library.new(library, name, theme)
 			SectionText.Size = UDim2.new(0, 401, 0, 36)
 			SectionText.Font = Enum.Font.GothamSemibold
 			SectionText.Text = name
-			SectionText.TextColor3 = Color3.fromRGB(245, 245, 245)
+			SectionText.TextColor3 = Color3.fromRGB(255, 255, 255)
 			SectionText.TextSize = 16.000
 			SectionText.TextXAlignment = Enum.TextXAlignment.Left
 			SectionOpen.Name = "SectionOpen"
@@ -492,7 +492,7 @@ function library.new(library, name, theme)
 				TextLabel.Size = UDim2.new(0, 428, 0, 22)
 				TextLabel.Font = Enum.Font.GothamSemibold
 				TextLabel.Text = text
-				TextLabel.TextColor3 = Color3.fromRGB(255, 182, 193)
+				TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 				TextLabel.TextSize = 14.000
 				LabelC.CornerRadius = UDim.new(0, 6)
 				LabelC.Name = "LabelC"
@@ -528,7 +528,7 @@ function library.new(library, name, theme)
 				ToggleBtn.AutoButtonColor = false
 				ToggleBtn.Font = Enum.Font.GothamSemibold
 				ToggleBtn.Text = "   " .. text
-				ToggleBtn.TextColor3 = Color3.fromRGB(255, 182, 193)
+				ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 				ToggleBtn.TextSize = 16.000
 				ToggleBtn.TextXAlignment = Enum.TextXAlignment.Left
 				ToggleBtnC.CornerRadius = UDim.new(0, 6)
