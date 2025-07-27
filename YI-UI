@@ -196,7 +196,7 @@ local config = {
 	Background.Position = UDim2.new(0, 0, 0, 0)
 	Background.Image = "rbxassetid://80818864421975" -- 使用指定ID
 	Background.ZIndex = 0
-	Background.ScaleType = Enum.ScaleType.Crop  -- 修改为裁剪模式
+	Background.ScaleType = Enum.ScaleType.Crop  -- 裁剪模式
 
 	services.UserInputService.InputEnded:Connect(function(input)
 		if input.KeyCode == Enum.KeyCode.LeftControl then
@@ -216,7 +216,7 @@ local config = {
 	Open.Active = true
 	Open.Draggable = true
 	Open.Image = "rbxassetid://80818864421975" -- 使用指定ID
-	Open.ImageTransparency = 0.5 -- 半透明
+	Open.ImageTransparency = 0 -- 不透明
 	
 	Open.MouseButton1Click:Connect(function()
 		Main.Visible = not Main.Visible
@@ -258,6 +258,7 @@ local config = {
 	SB.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	SB.BorderColor3 = config.MainColor
 	SB.Size = UDim2.new(0, 8, 0, 353)
+	SB.BackgroundTransparency = 1 -- 透明
 	SBC.CornerRadius = UDim.new(0, 6)
 	SBC.Name = "SBC"
 	SBC.Parent = SB
@@ -269,8 +270,7 @@ local config = {
 	Side.ClipsDescendants = true
 	Side.Position = UDim2.new(1, 0, 0, 0)
 	Side.Size = UDim2.new(0, 110, 0, 353)
-	-- 修改左侧背景为透明
-	Side.BackgroundTransparency = 1.0
+	Side.BackgroundTransparency = 1.0 -- 透明
 	SideG.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0.00, config.Zy_Color), 
     ColorSequenceKeypoint.new(1.00, config.Zy_Color)
@@ -337,7 +337,7 @@ local config = {
 		TabIco.BorderSizePixel = 0
 		TabIco.Size = UDim2.new(0, 24, 0, 24)
 		TabIco.Image = ("rbxassetid://%s"):format((icon or 4370341699))
-		TabIco.ImageTransparency = 0.5 -- 半透明
+		TabIco.ImageTransparency = 0 -- 不透明
 		TabText.Name = "TabText"
 		TabText.Parent = TabIco
 		TabText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -415,7 +415,7 @@ local config = {
 			SectionOpen.Position = UDim2.new(0, -33, 0, 5)
 			SectionOpen.Size = UDim2.new(0, 26, 0, 26)
 			SectionOpen.Image = "http://www.roblox.com/asset/?id=6031302934"
-			SectionOpen.ImageTransparency = 0.5 -- 半透明
+			SectionOpen.ImageTransparency = 0 -- 不透明
 			SectionOpened.Name = "SectionOpened"
 			SectionOpened.Parent = SectionOpen
 			SectionOpened.BackgroundTransparency = 1.000
