@@ -1,0 +1,260 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+-- 初始化玩家和角色
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local root = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+-- 确保银行远程事件存在
+local bankRemote
+if ReplicatedStorage:FindFirstChild("Bank") then
+    bankRemote = ReplicatedStorage:FindFirstChild("Bank")
+else
+    warn("未找到银行远程事件! 脚本无法继续")
+    return
+end
+
+-- 调试输出函数
+local function debugPrint(message, level)
+    if Config.DebugMode and Config.DebugLevel >= (level or 1) then
+        print("[AUTO BANK] " .. message)
+    end
+end
+
+-- 检查物品是否在目标列表中
+local function isTargetItem(itemName)
+    for _, target in ipairs(Config.TargetItems) do
+        if itemName == target then
+            return true
+        end
+    end
+    return false
+end
+
+-- 使用您提供的有效收集函数
+local function collectNearbyItems()
+    local itemsCollected = 0
+    
+    -- 使用您提供的有效收集代码
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and (obj.Position - root.Position).Magnitude <= Config.CollectRadius then
+            for _, child in ipairs(obj:GetChildren()) do
+                if child:IsA("TouchTransmitter") then
+                    firetouchinterest(root, obj, 0)
+                    firetouchinterest(root, obj, 1)
+                    itemsCollected += 1
+                    
+                    if Config.DebugLevel >= 3 then
+                        debugPrint("收集物品: " .. obj.Name, 3)
+                    end
+                    break
+                end
+            end
+        end
+    end
+    
+    if itemsCollected > 0 and Config.DebugLevel >= 2 then
+        debugPrint("本次收集: " .. itemsCollected .. " 个物品", 2)
+    end
+    
+    return itemsCollected
+end
+
+-- 获取所有目标物品
+local function getTargetItems()
+    local targetItems = {}
+    
+    -- 检查背包
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        for _, item in ipairs(backpack:GetChildren()) do
+            if item:IsA("Tool") and isTargetItem(item.Name) then
+                table.insert(targetItems, item)
+            end
+        end
+    end
+    
+    -- 检查角色当前装备
+    for _, tool in ipairs(character:GetChildren()) do
+        if tool:IsA("Tool") and isTargetItem(tool.Name) then
+            table.insert(targetItems, tool)
+        end
+    end
+    
+    return targetItems
+end
+
+-- 装备物品到手上
+local function equipItem(item)
+    if not character or not character.Parent then
+        character = player.Character or player.CharacterAdded:Wait()
+    end
+    
+    if not humanoid or not humanoid.Parent then
+        humanoid = character:FindFirstChild("Humanoid")
+        if not humanoid then return false end
+    end
+    
+    debugPrint("尝试装备物品: " .. item.Name, 2)
+    
+    -- 装备物品
+    humanoid:EquipTool(item)
+    
+    -- 等待装备完成
+    for _ = 1, 10 do
+        if character:FindFirstChild(item.Name) then
+            debugPrint("物品已装备: " .. item.Name, 2)
+            return true
+        end
+        task.wait(0.1)
+    end
+    
+    debugPrint("物品装备失败: " .. item.Name, 1)
+    return false
+end
+
+-- 尝试存入当前手持物品
+local function depositHeldItem()
+    if not character then return 0 end
+    
+    -- 查找当前手持物品
+    local heldItem
+    for _, tool in ipairs(character:GetChildren()) do
+        if tool:IsA("Tool") then
+            heldItem = tool
+            break
+        end
+    end
+    
+    if not heldItem then
+        debugPrint("未找到手持物品", 2)
+        return 0
+    end
+    
+    if not isTargetItem(heldItem.Name) then
+        debugPrint("手持物品不是目标物品: " .. heldItem.Name, 2)
+        return 0
+    end
+    
+    debugPrint("尝试存入物品: " .. heldItem.Name, 1)
+    
+    local depositAttempts = 0
+    
+    -- 尝试存入所有银行槽位
+    for _, slot in ipairs(Config.BankSlots) do
+        local args = {[1] = slot, [2] = false, [3] = false}
+        
+        -- 安全执行存入操作
+        pcall(function()
+            bankRemote:FireServer(unpack(args))
+            depositAttempts += 1
+            
+            if Config.DebugLevel >= 3 then
+                debugPrint("尝试存入槽位: " .. slot, 3)
+            end
+        end)
+        
+        task.wait(Config.DepositDelay)
+    end
+    
+    debugPrint("完成 " .. depositAttempts .. " 次存入尝试", 2)
+    return depositAttempts
+end
+
+-- 主挂机循环
+local function mainLoop()
+    debugPrint("===== 自动物品收集与银行存储系统启动 =====", 1)
+    debugPrint("目标物品: " .. table.concat(Config.TargetItems, ", "), 1)
+    
+    local lastCheckTime = 0
+    local idleStartTime = 0
+    local isIdle = false
+    
+    while true do
+        local currentTime = os.clock()
+        
+        -- 持续收集物品 (使用您提供的有效收集函数)
+        pcall(collectNearbyItems)
+        
+        -- 定期检查背包
+        if currentTime - lastCheckTime >= Config.CheckBackpackInterval then
+            debugPrint("检查背包中目标物品...", 2)
+            
+            local targetItems = getTargetItems()
+            local itemsProcessed = 0
+            
+            -- 处理找到的目标物品
+            for _, item in ipairs(targetItems) do
+                if equipItem(item) then
+                    local attempts = depositHeldItem()
+                    if attempts > 0 then
+                        itemsProcessed += 1
+                    end
+                end
+                
+                -- 短暂等待后继续处理
+                task.wait(0.5)
+            end
+            
+            if #targetItems > 0 then
+                debugPrint("处理完成: " .. itemsProcessed .. "/" .. #targetItems .. " 个目标物品", 1)
+            end
+            
+            -- 如果没有目标物品，进入空闲状态
+            if #targetItems == 0 and not isIdle then
+                debugPrint("未找到目标物品，进入空闲状态", 1)
+                isIdle = true
+                idleStartTime = currentTime
+            elseif #targetItems > 0 and isIdle then
+                debugPrint("发现目标物品，退出空闲状态", 1)
+                isIdle = false
+            end
+            
+            lastCheckTime = currentTime
+        end
+        
+        -- 空闲状态处理
+        if isIdle then
+            local idleTime = currentTime - idleStartTime
+            
+            if Config.DebugLevel >= 2 then
+                debugPrint("空闲状态: " .. math.floor(idleTime) .. "/" .. Config.IdleDelay .. " 秒", 2)
+            end
+            
+            -- 如果空闲时间过长，进行额外检查
+            if idleTime >= Config.IdleDelay then
+                debugPrint("空闲时间过长，重新扫描环境...", 1)
+                pcall(collectNearbyItems)
+                idleStartTime = currentTime
+            end
+        end
+        
+        task.wait(Config.CollectInterval)
+    end
+end
+
+-- 安全启动主循环
+local function safeStart()
+    local success, err = pcall(mainLoop)
+    
+    if not success then
+        debugPrint("脚本运行时出错: " .. tostring(err), 1)
+        debugPrint("尝试重新启动脚本...", 1)
+        
+        -- 等待后重试
+        task.wait(5)
+        safeStart()
+    end
+end
+
+-- 脚本入口
+if player and character then
+    coroutine.wrap(safeStart)()
+else
+    player.CharacterAdded:Wait()
+    task.wait(1)
+    coroutine.wrap(safeStart)()
+end
