@@ -1,0 +1,169 @@
+local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
+
+-- 创建UI界面
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AutoCollectGui"
+screenGui.Parent = PlayerGui
+screenGui.ResetOnSpawn = false
+
+-- 创建主容器
+local container = Instance.new("Frame")
+container.Name = "ControlContainer"
+container.Size = UDim2.new(0, 70, 0, 70)  -- 容器尺寸
+container.Position = UDim2.new(1, -80, 0, 20)  -- 右上角位置
+container.AnchorPoint = Vector2.new(1, 0)  -- 右上锚点
+container.BackgroundTransparency = 1  -- 完全透明
+container.Active = true  -- 允许接收输入
+container.Selectable = true
+container.Parent = screenGui
+
+-- 创建控制按钮（收集功能）
+local collectButton = Instance.new("TextButton")
+collectButton.Name = "CollectToggle"
+collectButton.Size = UDim2.new(0, 60, 0, 60)  -- 60x60像素
+collectButton.Position = UDim2.new(0.5, 0, 0.5, 0)  -- 容器中心
+collectButton.AnchorPoint = Vector2.new(0.5, 0.5)
+collectButton.BackgroundColor3 = Color3.fromRGB(220, 20, 60)  -- 关闭状态颜色（红色）
+collectButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+collectButton.Text = "OFF"
+collectButton.Font = Enum.Font.SourceSansBold
+collectButton.TextSize = 18
+collectButton.Parent = container
+
+-- 添加圆角效果
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(1, 0)  -- 完全圆形
+corner.Parent = collectButton
+
+-- 添加阴影效果
+local shadow = Instance.new("UIStroke")
+shadow.Color = Color3.fromRGB(60, 60, 60)
+shadow.Thickness = 3
+shadow.Parent = collectButton
+
+-- 控制变量
+local collectEnabled = false
+local collectLoopActive = false
+local collectLoopThread = nil
+local dragging = false
+local dragStartPosition = nil
+local dragStartOffset = nil
+
+-- 获取目标物品及其父路径
+local targetItem = workspace:GetChildren()[42]
+if not targetItem then
+    warn("目标物品不存在，收集功能将无法工作")
+end
+local targetParent = targetItem and targetItem.Parent or workspace
+
+-- 收集半径
+local collectRadius = 5000
+
+-- 收集函数
+local function collectNearbyItems()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if not character then return end
+    
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    
+    for _, obj in pairs(targetParent:GetDescendants()) do
+        if obj:IsA("BasePart") and (obj.Position - root.Position).Magnitude <= collectRadius then
+            for _, child in ipairs(obj:GetChildren()) do
+                if child:IsA("TouchTransmitter") then
+                    firetouchinterest(root, obj, 0)
+                    firetouchinterest(root, obj, 1)
+                end
+            end
+        end
+    end
+end
+
+-- 收集循环
+local function collectLoop()
+    while collectEnabled and collectLoopActive do
+        pcall(collectNearbyItems)
+        task.wait(0.3)
+    end
+    collectLoopActive = false
+end
+
+-- 可拖动功能实现
+container.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStartPosition = Vector2.new(input.Position.X, input.Position.Y)
+        dragStartOffset = container.Position
+    end
+end)
+
+container.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = Vector2.new(input.Position.X, input.Position.Y) - dragStartPosition
+        container.Position = UDim2.new(
+            dragStartOffset.X.Scale, 
+            dragStartOffset.X.Offset + delta.X,
+            dragStartOffset.Y.Scale,
+            dragStartOffset.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+        dragStartPosition = nil
+        dragStartOffset = nil
+    end
+end)
+
+-- 切换收集功能
+local function toggleCollect()
+    if collectEnabled and not collectLoopActive then
+        collectLoopActive = true
+        
+        -- 创建新线程
+        collectLoopThread = coroutine.create(collectLoop)
+        coroutine.resume(collectLoopThread)
+    elseif not collectEnabled and collectLoopActive then
+        collectLoopActive = false
+    end
+end
+
+-- 收集按钮点击事件
+collectButton.MouseButton1Click:Connect(function()
+    collectEnabled = not collectEnabled
+    collectButton.Text = collectEnabled and "ON" or "OFF"
+    collectButton.BackgroundColor3 = collectEnabled and Color3.fromRGB(50, 205, 50) or Color3.fromRGB(220, 20, 60)
+    
+    toggleCollect()
+end)
+
+-- 角色变化时重置状态
+game.Players.LocalPlayer.CharacterAdded:Connect(function()
+    collectEnabled = false
+    collectButton.Text = "OFF"
+    collectButton.BackgroundColor3 = Color3.fromRGB(220, 20, 60)
+    collectLoopActive = false
+end)
+
+-- 游戏重置时清理
+game.Players.LocalPlayer.CharacterRemoving:Connect(function()
+    collectEnabled = false
+    collectLoopActive = false
+end)
+
+-- 处理窗口大小变化
+game:GetService("GuiService"):GetSafeZoneChangedSignal():Connect(function()
+    local safeZone = game:GetService("GuiService"):GetSafeZone()
+    local screenSize = workspace.CurrentCamera.ViewportSize
+    
+    -- 确保UI保持在安全区域内
+    local currentPosition = container.Position
+    local newX = math.clamp(currentPosition.X.Offset, safeZone.X, screenSize.X - safeZone.X - container.AbsoluteSize.X)
+    local newY = math.clamp(currentPosition.Y.Offset, safeZone.Y, screenSize.Y - safeZone.Y - container.AbsoluteSize.Y)
+    
+    container.Position = UDim2.new(currentPosition.X.Scale, newX, currentPosition.Y.Scale, newY)
+end)
