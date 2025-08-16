@@ -58,7 +58,7 @@ end
 local targetParent = targetItem and targetItem.Parent or workspace
 
 -- 收集半径
-local collectRadius = 5000
+local collectRadius = 50000
 
 -- 收集函数
 local function collectNearbyItems()
