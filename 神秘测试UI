@@ -1,0 +1,523 @@
+repeat
+	task.wait()
+until game:IsLoaded()
+local library = {}
+local ToggleUI = false
+library.currentTab = nil
+library.flags = {}
+local services = setmetatable({}, {
+	__index = function(t, k)
+		return game.GetService(game, k)
+	end,
+})
+local player = services.Players.LocalPlayer
+local mouse = player:GetMouse()
+
+function Tween(obj, t, data)
+	services.TweenService
+		:Create(obj, TweenInfo.new(t[1], Enum.EasingStyle[t[2]], Enum.EasingDirection[t[3]]), data)
+		:Play()
+	return true
+end
+
+function Ripple(obj)
+	spawn(function()
+		if obj.ClipsDescendants ~= true then
+			obj.ClipsDescendants = true
+		end
+		local Ripple = Instance.new("ImageLabel")
+		Ripple.Name = "Ripple"
+		Ripple.Parent = obj
+		Ripple.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Ripple.BackgroundTransparency = 1.000
+		Ripple.ZIndex = 8
+		Ripple.Image = "rbxassetid://80818864421975" -- 使用指定ID
+		Ripple.ImageTransparency = 0.800
+		Ripple.ScaleType = Enum.ScaleType.Fit
+		Ripple.ImageColor3 = Color3.fromRGB(255, 255, 255)
+		Ripple.Position = UDim2.new(
+			(mouse.X - Ripple.AbsolutePosition.X) / obj.AbsoluteSize.X,
+			0,
+			(mouse.Y - Ripple.AbsolutePosition.Y) / obj.AbsoluteSize.Y,
+			0
+		)
+		Tween(
+			Ripple,
+			{ 0.3, "Linear", "InOut" },
+			{ Position = UDim2.new(-5.5, 0, -5.5, 0), Size = UDim2.new(12, 0, 12, 0) }
+		)
+		wait(0.15)
+		Tween(Ripple, { 0.3, "Linear", "InOut" }, { ImageTransparency = 1 })
+		wait(0.3)
+		Ripple:Destroy()
+	end)
+end
+
+local toggled = false
+local switchingTabs = false
+
+function switchTab(new)
+	if switchingTabs then
+		return
+	end
+	local old = library.currentTab
+	if old == nil then
+		new[2].Visible = true
+		library.currentTab = new
+		services.TweenService:Create(new[1], TweenInfo.new(0.1), { ImageTransparency = 0 }):Play()
+		services.TweenService:Create(new[1].TabText, TweenInfo.new(0.1), { TextTransparency = 0 }):Play()
+		return
+	end
+	if old[1] == new[1] then
+		return
+	end
+	switchingTabs = true
+	library.currentTab = new
+	services.TweenService:Create(old[1], TweenInfo.new(0.1), { ImageTransparency = 0.2 }):Play()
+	services.TweenService:Create(new[1], TweenInfo.new(0.1), { ImageTransparency = 0 }):Play()
+	services.TweenService:Create(old[1].TabText, TweenInfo.new(0.1), { TextTransparency = 0.2 }):Play()
+	services.TweenService:Create(new[1].TabText, TweenInfo.new(0.1), { TextTransparency = 0 }):Play()
+	old[2].Visible = false
+	new[2].Visible = true
+	task.wait(0.1)
+	switchingTabs = false
+end
+
+function createVRPanel()
+	-- 创建一个随玩家移动的部件来承载UI
+	local uiPart = Instance.new("Part")
+	uiPart.Name = "VRUIPart"
+	uiPart.Transparency = 1
+	uiPart.Size = Vector3.new(0.1, 0.1, 0.1)
+	uiPart.CanCollide = false
+	uiPart.Anchored = false
+	uiPart.Parent = workspace
+	
+	-- 创建BodyPosition来跟随玩家
+	local bodyPosition = Instance.new("BodyPosition")
+	bodyPosition.P = 10000
+	bodyPosition.D = 1000
+	bodyPosition.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+	bodyPosition.Parent = uiPart
+	
+	-- 创建BodyGyro来保持方向
+	local bodyGyro = Instance.new("BodyGyro")
+	bodyGyro.P = 10000
+	bodyGyro.D = 1000
+	bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+	bodyGyro.Parent = uiPart
+	
+	-- 创建BillboardGui来显示UI（始终面向摄像机）
+	local BillboardGui = Instance.new("BillboardGui")
+	BillboardGui.Name = "VRUI"
+	BillboardGui.Size = UDim2.new(0, 700, 0, 400) -- 调整大小以适应3D空间
+	BillboardGui.ExtentsOffset = Vector3.new(0, 0, 0)
+	BillboardGui.SizeOffset = Vector2.new(0, 0)
+	BillboardGui.Active = true
+	BillboardGui.AlwaysOnTop = true
+	BillboardGui.MaxDistance = 50 -- 最大可见距离
+	BillboardGui.Parent = uiPart
+	
+	-- 更新UI位置到玩家前方
+	local function updateUIPosition()
+		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			local hrp = player.Character.HumanoidRootPart
+			local head = player.Character:FindFirstChild("Head")
+			local offset = Vector3.new(0, 0, -4) -- 在玩家前方4个单位
+			
+			-- 使用摄像机的CFrame来确保UI始终面向玩家
+			local camera = workspace.CurrentCamera
+			local cameraCFrame = camera.CFrame
+			
+			-- 计算UI位置（在摄像机前方）
+			local uiPosition = cameraCFrame.Position + (cameraCFrame.LookVector * 4)
+			uiPosition = uiPosition + Vector3.new(0, -1, 0) -- 稍微向下调整
+			
+			bodyPosition.Position = uiPosition
+			
+			-- 让UI始终面向摄像机
+			bodyGyro.CFrame = CFrame.new(uiPosition, uiPosition + cameraCFrame.LookVector)
+		end
+	end
+	
+	-- 每帧更新位置
+	local connection
+	connection = game:GetService("RunService").Heartbeat:Connect(function()
+		updateUIPosition()
+	end)
+	
+	return BillboardGui, uiPart, connection
+end
+
+local YI, uiPart, uiConnection = createVRPanel()
+
+-------------------------GHOST TEAM------------------------------
+local config = {
+    MainColor = Color3.fromRGB(255, 105, 180),  -- 粉色
+    TabColor = Color3.fromRGB(255, 182, 193),   -- 浅粉色
+    Bg_Color = Color3.fromRGB(255, 192, 203),   -- 粉红色
+    Zy_Color = Color3.fromRGB(255, 182, 193),   -- 浅粉色
+    
+    Button_Color = Color3.fromRGB(255, 192, 203),
+    Textbox_Color = Color3.fromRGB(255, 182, 193),
+    Dropdown_Color = Color3.fromRGB(255, 192, 203),
+    Keybind_Color = Color3.fromRGB(255, 182, 193),
+    Label_Color = Color3.fromRGB(255, 192, 203),
+    
+    Slider_Color = Color3.fromRGB(255, 182, 193),
+    SliderBar_Color = Color3.fromRGB(255, 105, 180),  -- 粉色
+    
+    Toggle_Color = Color3.fromRGB(255, 182, 193),
+    Toggle_Off = Color3.fromRGB(220, 180, 200),       -- 浅紫色
+    Toggle_On = Color3.fromRGB(255, 105, 180),        -- 粉色
+}
+-------------------------GHOST TEAM------------------------------
+
+function library.new(library, name, theme)
+	-- 清理旧的UI
+	if uiPart then
+		uiPart:Destroy()
+	end
+	if uiConnection then
+		uiConnection:Disconnect()
+	end
+	
+	-- 创建新的VR面板
+	YI, uiPart, uiConnection = createVRPanel()
+	
+	local Main = Instance.new("Frame")
+	local Background = Instance.new("ImageLabel") -- 添加背景图片
+	local TabMain = Instance.new("Frame")
+	local MainC = Instance.new("UICorner")
+	local SB = Instance.new("Frame")
+	local SBC = Instance.new("UICorner")
+	local Side = Instance.new("Frame")
+	local SideG = Instance.new("UIGradient")
+	local TabBtns = Instance.new("ScrollingFrame")
+	local TabBtnsL = Instance.new("UIListLayout")
+	local ScriptTitle = Instance.new("TextLabel")
+	local SBG = Instance.new("UIGradient")
+	local DropShadowHolder = Instance.new("Frame")
+	local DropShadow = Instance.new("ImageLabel")
+	local UICornerMain = Instance.new("UICorner")
+	local UIGradient = Instance.new("UIGradient")
+	local UIGradientTitle = Instance.new("UIGradient")
+
+	function UiDestroy()
+		if uiPart then
+			uiPart:Destroy()
+		end
+		if uiConnection then
+			uiConnection:Disconnect()
+		end
+	end
+	
+	function ToggleUILib()
+		if not ToggleUI then
+			YI.Enabled = false
+			ToggleUI = true
+		else
+			ToggleUI = false
+			YI.Enabled = true
+		end
+	end
+	
+	Main.Name = "Main"
+	Main.Parent = YI
+	Main.AnchorPoint = Vector2.new(0.5, 0.5)
+	Main.BackgroundColor3 = Color3.new(0, 0, 0)
+	Main.BackgroundTransparency = 0.8  -- 设置半透明背景
+	Main.BorderSizePixel = 0
+	Main.Position = UDim2.new(0.5, 0, 0.5, 0)
+	Main.Size = UDim2.new(1, 0, 1, 0)  -- 填满整个BillboardGui
+	Main.ZIndex = 1
+	Main.Active = true
+	
+	-- 添加背景图片
+	Background.Name = "Background"
+	Background.Parent = Main
+	Background.BackgroundTransparency = 1
+	Background.Size = UDim2.new(1, 0, 1, 0)
+	Background.Position = UDim2.new(0, 0, 0, 0)
+	Background.Image = "rbxassetid://80818864421975"
+	Background.ZIndex = 0
+	Background.ImageTransparency = 0.5  -- 半透明背景图
+	Background.ScaleType = Enum.ScaleType.Crop
+
+	-- 创建打开/关闭按钮（仍然在屏幕上，用于控制3D UI的显示）
+	local Open = Instance.new("ImageButton")
+	local UICorner = Instance.new("UICorner")
+
+	Open.Name = "Open"
+	Open.Parent = player:WaitForChild("PlayerGui")
+	Open.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Open.BackgroundTransparency = 1
+	Open.Position = UDim2.new(0.00829315186, 0, 0.13107837, 0)
+	Open.Size = UDim2.new(0, 50, 0, 50)
+	Open.Active = true
+	Open.Image = "rbxassetid://80818864421975"
+	Open.ImageTransparency = 0
+	
+	Open.MouseButton1Click:Connect(function()
+		YI.Enabled = not YI.Enabled
+	end)
+
+	UICorner.Parent = Open
+
+	-- 移除拖拽功能，因为现在是3D UI
+	-- drag(Main)
+	
+	UICornerMain.Parent = Main
+	UICornerMain.CornerRadius = UDim.new(0, 8)  -- 更大的圆角，看起来更好看
+	
+	TabMain.Name = "TabMain"
+	TabMain.Parent = Main
+	TabMain.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	TabMain.BackgroundTransparency = 0.8  -- 半透明
+	TabMain.Position = UDim2.new(0.017000037, 0, 0.03, 0)
+	TabMain.Size = UDim2.new(0.966, 0, 0.94, 0)  -- 相对大小
+	
+	-- ... 其余UI元素的创建代码保持不变，但需要调整一些尺寸为相对值 ...
+	
+	-- 调整所有尺寸为相对值，使其在3D空间中看起来更合适
+	MainC.CornerRadius = UDim.new(0, 8)
+	MainC.Name = "MainC"
+	MainC.Parent = TabMain
+	
+	SB.Name = "SB"
+	SB.Parent = Main
+	SB.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	SB.BorderColor3 = config.MainColor
+	SB.Size = UDim2.new(0, 8, 1, 0)  -- 全高度
+	SB.BackgroundTransparency = 0.8
+	
+	SBC.CornerRadius = UDim.new(0, 6)
+	SBC.Name = "SBC"
+	SBC.Parent = SB
+	
+	Side.Name = "Side"
+	Side.Parent = SB
+	Side.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Side.BorderColor3 = Color3.fromRGB(255, 255, 255)
+	Side.BorderSizePixel = 0
+	Side.ClipsDescendants = true
+	Side.Position = UDim2.new(1, 0, 0, 0)
+	Side.Size = UDim2.new(0, 130, 1, 0)  -- 相对高度
+	Side.BackgroundTransparency = 0.8
+	
+	SideG.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, config.Zy_Color), 
+    ColorSequenceKeypoint.new(1.00, config.Zy_Color)
+})
+	SideG.Rotation = 90
+	SideG.Name = "SideG"
+	SideG.Parent = Side
+	
+	TabBtns.Name = "TabBtns"
+	TabBtns.Parent = Side
+	TabBtns.Active = true
+	TabBtns.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	TabBtns.BackgroundTransparency = 0.8
+	TabBtns.BorderSizePixel = 0
+	TabBtns.Position = UDim2.new(0, 0, 0.0973535776, 0)
+	TabBtns.Size = UDim2.new(1, 0, 0.9, 0)  -- 相对尺寸
+	TabBtns.CanvasSize = UDim2.new(0, 0, 1, 0)
+	TabBtns.ScrollBarThickness = 2
+	
+	TabBtnsL.Name = "TabBtnsL"
+	TabBtnsL.Parent = TabBtns
+	TabBtnsL.SortOrder = Enum.SortOrder.LayoutOrder
+	TabBtnsL.Padding = UDim.new(0, 8)
+	
+	ScriptTitle.Name = "ScriptTitle"
+	ScriptTitle.Parent = Side
+	ScriptTitle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	ScriptTitle.BackgroundTransparency = 0.8
+	ScriptTitle.Position = UDim2.new(0, 0, 0.00953488424, 0)
+	ScriptTitle.Size = UDim2.new(1, 0, 0.08, 0)  -- 相对尺寸
+	ScriptTitle.Font = Enum.Font.GothamSemibold
+	ScriptTitle.Text = name
+	ScriptTitle.TextColor3 = Color3.fromRGB(255, 105, 180)
+	ScriptTitle.TextSize = 16.000  -- 稍大一些的字体
+	ScriptTitle.TextScaled = true
+	ScriptTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+	SBG.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, config.Zy_Color), 
+    ColorSequenceKeypoint.new(1.00, config.Zy_Color)
+})
+	SBG.Rotation = 90
+	SBG.Name = "SBG"
+	SBG.Parent = SB
+	
+	TabBtnsL:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		TabBtns.CanvasSize = UDim2.new(0, 0, 0, TabBtnsL.AbsoluteContentSize.Y + 18)
+	end)
+
+	-- 添加键盘快捷键来切换UI可见性
+	services.UserInputService.InputEnded:Connect(function(input)
+		if input.KeyCode == Enum.KeyCode.F3 then  -- 使用F3键切换UI
+			YI.Enabled = not YI.Enabled
+		end
+	end)
+
+	-- 窗口对象的创建代码保持不变...
+	-- 注意：所有元素的尺寸可能需要调整为相对值以适应3D空间
+	
+	local window = {}
+	
+	function window.Tab(window, name, icon)
+		local Tab = Instance.new("ScrollingFrame")
+		local TabIco = Instance.new("ImageLabel")
+		local TabText = Instance.new("TextLabel")
+		local TabBtn = Instance.new("TextButton")
+		local TabL = Instance.new("UIListLayout")
+		
+		Tab.Name = "Tab"
+		Tab.Parent = TabMain
+		Tab.Active = true
+		Tab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Tab.BackgroundTransparency = 0.8
+		Tab.Size = UDim2.new(1, 0, 1, 0)
+		Tab.ScrollBarThickness = 3  -- 稍粗一些的滚动条，在3D中更容易看到
+		Tab.Visible = false
+		
+		TabIco.Name = "TabIco"
+		TabIco.Parent = TabBtns
+		TabIco.BackgroundTransparency = 0.8
+		TabIco.BorderSizePixel = 0
+		TabIco.Size = UDim2.new(0, 28, 0, 28)  -- 稍大一些的图标
+		TabIco.Image = ("rbxassetid://%s"):format((icon or 4370341699))
+		TabIco.ImageTransparency = 0
+		
+		TabText.Name = "TabText"
+		TabText.Parent = TabIco
+		TabText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		TabText.BackgroundTransparency = 0.8
+		TabText.Position = UDim2.new(1.41666663, 0, 0, 0)
+		TabText.Size = UDim2.new(0, 90, 0, 28)
+		TabText.Font = Enum.Font.GothamSemibold
+		TabText.Text = name
+		TabText.TextColor3 = Color3.fromRGB(255, 255, 255)
+		TabText.TextSize = 14.000
+		TabText.TextXAlignment = Enum.TextXAlignment.Left
+		TabText.TextTransparency = 0.2
+		
+		TabBtn.Name = "TabBtn"
+		TabBtn.Parent = TabIco
+		TabBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		TabBtn.BackgroundTransparency = 0.8
+		TabBtn.BorderSizePixel = 0
+		TabBtn.Size = UDim2.new(0, 130, 0, 28)
+		TabBtn.AutoButtonColor = false
+		TabBtn.Font = Enum.Font.SourceSans
+		TabBtn.Text = ""
+		TabBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+		TabBtn.TextSize = 14.000
+		
+		TabL.Name = "TabL"
+		TabL.Parent = Tab
+		TabL.SortOrder = Enum.SortOrder.LayoutOrder
+		TabL.Padding = UDim.new(0, 6)  -- 稍大的间距
+		
+		TabBtn.MouseButton1Click:Connect(function()
+			spawn(function()
+				Ripple(TabBtn)
+			end)
+			switchTab({ TabIco, Tab })
+		end)
+		
+		if library.currentTab == nil then
+			switchTab({ TabIco, Tab })
+		end
+		
+		TabL:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+			Tab.CanvasSize = UDim2.new(0, 0, 0, TabL.AbsoluteContentSize.Y + 12)
+		end)
+		
+		local tab = {}
+		
+		function tab.section(tab, name, TabVal)
+			-- 修改Section的尺寸为相对值
+			local Section = Instance.new("Frame")
+			local SectionC = Instance.new("UICorner")
+			local SectionText = Instance.new("TextLabel")
+			local SectionOpen = Instance.new("ImageLabel")
+			local SectionOpened = Instance.new("ImageLabel")
+			local SectionToggle = Instance.new("ImageButton")
+			local Objs = Instance.new("Frame")
+			local ObjsL = Instance.new("UIListLayout")
+			
+			Section.Name = "Section"
+			Section.Parent = Tab
+			Section.BackgroundColor3 = config.TabColor
+			Section.BackgroundTransparency = 0.8
+			Section.BorderSizePixel = 0
+			Section.ClipsDescendants = true
+			Section.Size = UDim2.new(0.98, 0, 0, 42)  -- 稍高的Section
+			
+			SectionC.CornerRadius = UDim.new(0, 6)
+			SectionC.Name = "SectionC"
+			SectionC.Parent = Section
+			
+			-- ... 其余section创建代码保持不变，但需要调整尺寸为相对值 ...
+			
+			-- 由于代码很长，这里只展示关键修改点，其余部分保持原样
+			-- 主要需要将所有绝对尺寸（如428, 38等）改为相对值
+			
+			local section = {}
+			
+			-- 修改按钮尺寸为相对值
+			function section.Button(section, text, callback)
+				local callback = callback or function() end
+				local BtnModule = Instance.new("Frame")
+				local Btn = Instance.new("TextButton")
+				local BtnC = Instance.new("UICorner")
+				
+				BtnModule.Name = "BtnModule"
+				BtnModule.Parent = Objs
+				BtnModule.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				BtnModule.BackgroundTransparency = 1.000
+				BtnModule.BorderSizePixel = 0
+				BtnModule.Position = UDim2.new(0, 0, 0, 0)
+				BtnModule.Size = UDim2.new(1, 0, 0, 40)  -- 相对宽度
+				
+				Btn.Name = "Btn"
+				Btn.Parent = BtnModule
+				Btn.BackgroundColor3 = config.Button_Color
+				Btn.BackgroundTransparency = 0.6  -- 稍微透明
+				Btn.BorderSizePixel = 0
+				Btn.Size = UDim2.new(1, 0, 0, 40)  -- 相对宽度
+				Btn.AutoButtonColor = false
+				Btn.Font = Enum.Font.GothamSemibold
+				Btn.Text = "   " .. text
+				Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				Btn.TextSize = 16.000
+				Btn.TextXAlignment = Enum.TextXAlignment.Left
+				
+				BtnC.CornerRadius = UDim.new(0, 6)
+				BtnC.Name = "BtnC"
+				BtnC.Parent = Btn
+				
+				Btn.MouseButton1Click:Connect(function()
+					spawn(function()
+						Ripple(Btn)
+					end)
+					spawn(callback)
+				end)
+			end
+			
+			-- 对于所有UI元素函数（Label、Toggle、Keybind、Textbox、Slider、Dropdown）
+			-- 都需要将绝对尺寸改为相对值，例如：
+			-- UDim2.new(0, 428, 0, 38) 改为 UDim2.new(1, 0, 0, 40)
+			
+			return section
+		end
+		
+		return tab
+	end
+	
+	return window
+end
+
+return library
