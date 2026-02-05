@@ -121,23 +121,23 @@ function library.new(library, name, theme)
 	end
 -------------------------GHOST TEAM------------------------------
 local config = {
-    MainColor = Color3.fromRGB(173, 216, 230),  -- 淡蓝色
-    TabColor = Color3.fromRGB(176, 224, 230),   -- 淡蓝色（稍浅）
-    Bg_Color = Color3.fromRGB(224, 255, 255),   -- 淡蓝色（更浅）
-    Zy_Color = Color3.fromRGB(176, 224, 230),   -- 同TabColor
+    MainColor = Color3.fromRGB(30, 144, 255),   -- 道奇蓝（深蓝色）
+    TabColor = Color3.fromRGB(70, 130, 180),    -- 钢蓝色
+    Bg_Color = Color3.fromRGB(100, 149, 237),   -- 矢车菊蓝
+    Zy_Color = Color3.fromRGB(70, 130, 180),    -- 钢蓝色
     
-    Button_Color = Color3.fromRGB(176, 224, 230),
-    Textbox_Color = Color3.fromRGB(176, 224, 230),
-    Dropdown_Color = Color3.fromRGB(176, 224, 230),
-    Keybind_Color = Color3.fromRGB(176, 224, 230),
-    Label_Color = Color3.fromRGB(176, 224, 230),
+    Button_Color = Color3.fromRGB(70, 130, 180),
+    Textbox_Color = Color3.fromRGB(70, 130, 180),
+    Dropdown_Color = Color3.fromRGB(70, 130, 180),
+    Keybind_Color = Color3.fromRGB(70, 130, 180),
+    Label_Color = Color3.fromRGB(70, 130, 180),
     
-    Slider_Color = Color3.fromRGB(176, 224, 230),
-    SliderBar_Color = Color3.fromRGB(64, 224, 208),  -- 青色-淡蓝过渡
+    Slider_Color = Color3.fromRGB(70, 130, 180),
+    SliderBar_Color = Color3.fromRGB(30, 144, 255),  -- 道奇蓝
     
-    Toggle_Color = Color3.fromRGB(176, 224, 230),
-    Toggle_Off = Color3.fromRGB(220, 220, 220),     -- 浅灰色
-    Toggle_On = Color3.fromRGB(64, 224, 208),       -- 青色
+    Toggle_Color = Color3.fromRGB(70, 130, 180),
+    Toggle_Off = Color3.fromRGB(150, 150, 150),      -- 中灰色
+    Toggle_On = Color3.fromRGB(30, 144, 255),        -- 道奇蓝
 }
 -------------------------GHOST TEAM------------------------------
 	local YI = Instance.new("ScreenGui")
@@ -300,7 +300,7 @@ local config = {
 	ScriptTitle.Size = UDim2.new(0, 102, 0, 20)
 	ScriptTitle.Font = Enum.Font.GothamSemibold
 	ScriptTitle.Text = name
-	ScriptTitle.TextColor3 = Color3.fromRGB(64, 224, 208) -- 青色-淡蓝
+	ScriptTitle.TextColor3 = Color3.fromRGB(30, 144, 255) -- 道奇蓝
 	ScriptTitle.TextSize = 14.000
 	ScriptTitle.TextScaled = true
 	ScriptTitle.TextXAlignment = Enum.TextXAlignment.Left
