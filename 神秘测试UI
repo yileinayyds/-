@@ -28,7 +28,7 @@ function Ripple(obj)
 		Ripple.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		Ripple.BackgroundTransparency = 1.000
 		Ripple.ZIndex = 8
-		Ripple.Image = "rbxassetid://80818864421975" -- 使用指定ID
+		Ripple.Image = "rbxassetid://99498962925184" -- 使用指定ID
 		Ripple.ImageTransparency = 0.800
 		Ripple.ScaleType = Enum.ScaleType.Fit
 		Ripple.ImageColor3 = Color3.fromRGB(255, 255, 255)
@@ -194,7 +194,7 @@ local config = {
 	Background.BackgroundTransparency = 1
 	Background.Size = UDim2.new(1, 0, 1, 0)
 	Background.Position = UDim2.new(0, 0, 0, 0)
-	Background.Image = "rbxassetid://80818864421975" -- 使用指定ID
+	Background.Image = "rbxassetid://99498962925184" -- 使用指定ID
 	Background.ZIndex = 0
 	Background.ScaleType = Enum.ScaleType.Crop  -- 裁剪模式
 
@@ -215,7 +215,7 @@ local config = {
 	Open.Size = UDim2.new(0, 50, 0, 50)
 	Open.Active = true
 	Open.Draggable = true
-	Open.Image = "rbxassetid://80818864421975" -- 使用指定ID
+	Open.Image = "rbxassetid://99498962925184" -- 使用指定ID
 	Open.ImageTransparency = 0 -- 不透明
 	
 	Open.MouseButton1Click:Connect(function()
